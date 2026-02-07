@@ -300,7 +300,7 @@ class _DayCell extends StatelessWidget {
 
     return CupertinoButton(
       padding: EdgeInsets.zero,
-      minSize: 0,
+      minimumSize: 0,
       onPressed: isDisabled ? null : onTap,
       child: Container(
         decoration: BoxDecoration(

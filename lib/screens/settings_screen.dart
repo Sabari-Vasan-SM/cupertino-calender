@@ -153,6 +153,9 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _openUrl(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (!context.mounted) {
+        return;
+      }
       _showError(context, 'Could not open the link.');
     }
   }

@@ -71,7 +71,7 @@ class _GlowCircle extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: RadialGradient(
-          colors: [color.withOpacity(0.6), color.withOpacity(0.0)],
+          colors: [color.withValues(alpha: 0.6), color.withValues(alpha: 0.0)],
         ),
       ),
     );
