@@ -15,6 +15,8 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDark =
+        CupertinoTheme.of(context).brightness == Brightness.dark;
     final Color baseTint = CupertinoDynamicColor.withBrightness(
       color: const Color(0x06FFFFFF),
       darkColor: const Color(0x12FFFFFF),
@@ -27,6 +29,8 @@ class GlassPanel extends StatelessWidget {
       color: const Color(0x1DFFFFFF),
       darkColor: const Color(0x24FFFFFF),
     ).resolveFrom(context);
+    final Color darkGradientStart = const Color(0x33121F2E);
+    final Color darkGradientEnd = const Color(0x1F0D141E);
     return LiquidGlass.withOwnLayer(
       settings: const LiquidGlassSettings(
         thickness: 14,
@@ -41,11 +45,13 @@ class GlassPanel extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: baseTint,
+            color: isDark ? const Color(0x14121F2E) : baseTint,
             border: Border.all(color: borderTint, width: 0.4),
             borderRadius: BorderRadius.circular(radius),
             gradient: LinearGradient(
-              colors: [highlightTint, baseTint],
+              colors: isDark
+                  ? [darkGradientStart, darkGradientEnd]
+                  : [highlightTint, baseTint],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
