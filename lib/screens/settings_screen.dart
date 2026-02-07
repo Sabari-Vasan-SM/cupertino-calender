@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/theme_mode_provider.dart';
@@ -10,19 +10,25 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeModeProvider>();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SwitchListTile(
-            title: const Text('Dark Mode'),
-            value: themeProvider.isDark,
-            onChanged: themeProvider.setDarkMode,
-          ),
-        ],
+    return CupertinoPageScaffold(
+      navigationBar: const CupertinoNavigationBar(middle: Text('Settings')),
+      child: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          children: [
+            CupertinoListSection.insetGrouped(
+              children: [
+                CupertinoListTile(
+                  title: const Text('Dark Mode'),
+                  trailing: CupertinoSwitch(
+                    value: themeProvider.isDark,
+                    onChanged: themeProvider.setDarkMode,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

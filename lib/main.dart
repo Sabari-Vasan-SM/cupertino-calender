@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/tasks_provider.dart';
@@ -23,18 +23,14 @@ class CalendarTaskApp extends StatelessWidget {
       ],
       child: Consumer<ThemeModeProvider>(
         builder: (context, themeProvider, _) {
-          return MaterialApp(
+          return CupertinoApp(
             debugShowCheckedModeBanner: false,
-            themeMode: themeProvider.mode,
-            theme: ThemeData(
-              useMaterial3: true,
-              colorSchemeSeed: Colors.indigo,
-              brightness: Brightness.light,
-            ),
-            darkTheme: ThemeData(
-              useMaterial3: true,
-              colorSchemeSeed: Colors.indigo,
-              brightness: Brightness.dark,
+            theme: CupertinoThemeData(
+              brightness: themeProvider.isDark
+                  ? Brightness.dark
+                  : Brightness.light,
+              primaryColor: CupertinoColors.systemBlue,
+              scaffoldBackgroundColor: CupertinoColors.systemBackground,
             ),
             home: const MainShell(),
           );
@@ -44,51 +40,44 @@ class CalendarTaskApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatefulWidget {
+class MainShell extends StatelessWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  int _currentIndex = 0;
-
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    TasksScreen(),
-    SettingsScreen(),
-  ];
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
+            icon: Icon(CupertinoIcons.calendar),
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.checklist),
+            icon: Icon(CupertinoIcons.checkmark_circle),
             label: 'Tasks',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(CupertinoIcons.settings),
             label: 'Settings',
           ),
         ],
       ),
+      tabBuilder: (context, index) {
+        return CupertinoTabView(
+          builder: (context) {
+            switch (index) {
+              case 0:
+                return const HomeScreen();
+              case 1:
+                return const TasksScreen();
+              case 2:
+                return const SettingsScreen();
+              default:
+                return const HomeScreen();
+            }
+          },
+        );
+      },
     );
   }
 }

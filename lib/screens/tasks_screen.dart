@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -12,36 +12,36 @@ class TasksScreen extends StatelessWidget {
     final tasksProvider = context.watch<TasksProvider>();
     final upcoming = tasksProvider.upcomingTasks(DateTime.now());
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tasks'),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Tasks'),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => _showAddTaskSheet(context),
+          child: const Icon(CupertinoIcons.add),
+        ),
       ),
-      body: upcoming.isEmpty
-          ? const Center(
-              child: Text('No upcoming tasks'),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: upcoming.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final task = upcoming[index];
-                final dateLabel = DateFormat.yMMMd().format(task.date);
-                return Card(
-                  child: ListTile(
-                    title: Text(task.title),
-                    subtitle: Text(dateLabel),
-                    leading: Icon(
-                      Icons.event,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+      child: SafeArea(
+        child: upcoming.isEmpty
+            ? const Center(child: Text('No upcoming tasks'))
+            : ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                children: [
+                  CupertinoListSection.insetGrouped(
+                    children: upcoming.map((task) {
+                      final dateLabel = DateFormat.yMMMd().format(task.date);
+                      return CupertinoListTile(
+                        title: Text(task.title),
+                        subtitle: Text(dateLabel),
+                        leading: const Icon(
+                          CupertinoIcons.calendar,
+                          color: CupertinoColors.systemBlue,
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddTaskSheet(context),
-        child: const Icon(Icons.add),
+                ],
+              ),
       ),
     );
   }
@@ -49,85 +49,81 @@ class TasksScreen extends StatelessWidget {
   Future<void> _showAddTaskSheet(BuildContext context) async {
     final tasksProvider = context.read<TasksProvider>();
     final titleController = TextEditingController();
-    DateTime selectedDate = DateUtils.dateOnly(DateTime.now());
+    DateTime selectedDate = _dateOnly(DateTime.now());
 
-    await showModalBottomSheet<void>(
+    await showCupertinoModalPopup<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 16,
-                right: 16,
-                top: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Add Task',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Title',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+        return CupertinoPopupSurface(
+          child: SafeArea(
+            top: false,
+            child: StatefulBuilder(
+              builder: (context, setModalState) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(
-                        child: Text(
-                          DateFormat.yMMMd().format(selectedDate),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Cancel'),
+                          ),
+                          const Text(
+                            'Add Task',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              final title = titleController.text.trim();
+                              if (title.isEmpty) {
+                                return;
+                              }
+                              tasksProvider.addTask(selectedDate, title);
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Add'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () async {
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: selectedDate,
-                            firstDate: DateUtils.dateOnly(DateTime.now()),
-                            lastDate: DateTime(2050, 12, 31),
-                          );
-                          if (picked != null) {
+                      const SizedBox(height: 12),
+                      CupertinoTextField(
+                        controller: titleController,
+                        placeholder: 'Title',
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        height: 200,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.date,
+                          initialDateTime: selectedDate,
+                          minimumDate: _dateOnly(DateTime.now()),
+                          maximumDate: DateTime(2050, 12, 31),
+                          onDateTimeChanged: (value) {
                             setModalState(() {
-                              selectedDate = DateUtils.dateOnly(picked);
+                              selectedDate = _dateOnly(value);
                             });
-                          }
-                        },
-                        child: const Text('Pick Date'),
+                          },
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () {
-                        final title = titleController.text.trim();
-                        if (title.isEmpty) {
-                          return;
-                        }
-                        tasksProvider.addTask(selectedDate, title);
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Add Task'),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );
+
+    titleController.dispose();
+  }
+
+  DateTime _dateOnly(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
   }
 }
