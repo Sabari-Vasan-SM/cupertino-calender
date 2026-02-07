@@ -116,72 +116,125 @@ class _GlassTabBar extends StatelessWidget {
             final itemWidth = constraints.maxWidth / 3;
             final pillLeft = itemWidth * currentIndex + 4;
 
-            return GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onHorizontalDragUpdate: (details) {
-                final dx = details.localPosition.dx.clamp(
-                  0.0,
-                  constraints.maxWidth,
-                );
-                final index = (dx / itemWidth).floor().clamp(0, 2);
-                if (index != currentIndex) {
-                  onTap(index);
-                }
-              },
-              child: Stack(
-                children: [
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    left: pillLeft,
-                    top: 4,
-                    bottom: 4,
-                    width: itemWidth - 8,
-                    child: LiquidGlass.withOwnLayer(
-                      settings: const LiquidGlassSettings(
-                        thickness: 20,
-                        blur: 14,
-                        glassColor: Color(0x3AFFFFFF),
-                        lightIntensity: 1.2,
-                        saturation: 1.15,
-                      ),
-                      shape: LiquidRoundedSuperellipse(borderRadius: 24),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: pillBorder, width: 0.8),
-                          color: pillFill,
+            return _PressScale(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onHorizontalDragUpdate: (details) {
+                  final dx = details.localPosition.dx.clamp(
+                    0.0,
+                    constraints.maxWidth,
+                  );
+                  final index = (dx / itemWidth).floor().clamp(0, 2);
+                  if (index != currentIndex) {
+                    onTap(index);
+                  }
+                },
+                child: Stack(
+                  children: [
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeOutCubic,
+                      left: pillLeft,
+                      top: 4,
+                      bottom: 4,
+                      width: itemWidth - 8,
+                      child: LiquidGlass.withOwnLayer(
+                        settings: const LiquidGlassSettings(
+                          thickness: 20,
+                          blur: 14,
+                          glassColor: Color(0x3AFFFFFF),
+                          lightIntensity: 1.2,
+                          saturation: 1.15,
+                        ),
+                        shape: LiquidRoundedSuperellipse(borderRadius: 24),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: pillBorder, width: 0.8),
+                            color: pillFill,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      _TabItem(
-                        icon: CupertinoIcons.calendar,
-                        label: 'Home',
-                        isActive: currentIndex == 0,
-                        onTap: () => onTap(0),
-                      ),
-                      _TabItem(
-                        icon: CupertinoIcons.checkmark_circle,
-                        label: 'Tasks',
-                        isActive: currentIndex == 1,
-                        onTap: () => onTap(1),
-                      ),
-                      _TabItem(
-                        icon: CupertinoIcons.settings,
-                        label: 'Settings',
-                        isActive: currentIndex == 2,
-                        onTap: () => onTap(2),
-                      ),
-                    ],
-                  ),
-                ],
+                    Row(
+                      children: [
+                        _TabItem(
+                          icon: CupertinoIcons.calendar,
+                          label: 'Home',
+                          isActive: currentIndex == 0,
+                          onTap: () => onTap(0),
+                        ),
+                        _TabItem(
+                          icon: CupertinoIcons.checkmark_circle,
+                          label: 'Tasks',
+                          isActive: currentIndex == 1,
+                          onTap: () => onTap(1),
+                        ),
+                        _TabItem(
+                          icon: CupertinoIcons.settings,
+                          label: 'Settings',
+                          isActive: currentIndex == 2,
+                          onTap: () => onTap(2),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
         ),
+      ),
+    );
+  }
+}
+
+class _PressScale extends StatefulWidget {
+  const _PressScale({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<_PressScale> {
+  bool _pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: (_) {
+        setState(() {
+          _pressed = true;
+        });
+      },
+      onTapCancel: () {
+        setState(() {
+          _pressed = false;
+        });
+      },
+      onTapUp: (_) {
+        setState(() {
+          _pressed = false;
+        });
+      },
+      onLongPressStart: (_) {
+        setState(() {
+          _pressed = true;
+        });
+      },
+      onLongPressEnd: (_) {
+        setState(() {
+          _pressed = false;
+        });
+      },
+      child: AnimatedScale(
+        scale: _pressed ? 1.04 : 1.0,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        child: widget.child,
       ),
     );
   }

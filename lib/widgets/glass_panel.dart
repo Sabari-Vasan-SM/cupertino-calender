@@ -16,24 +16,24 @@ class GlassPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color baseTint = CupertinoDynamicColor.withBrightness(
-      color: const Color(0x14FFFFFF),
-      darkColor: const Color(0x1FFFFFFF),
+      color: const Color(0x06FFFFFF),
+      darkColor: const Color(0x12FFFFFF),
     ).resolveFrom(context);
     final Color highlightTint = CupertinoDynamicColor.withBrightness(
-      color: const Color(0x33FFFFFF),
-      darkColor: const Color(0x2AFFFFFF),
+      color: const Color(0x16FFFFFF),
+      darkColor: const Color(0x20FFFFFF),
     ).resolveFrom(context);
     final Color borderTint = CupertinoDynamicColor.withBrightness(
-      color: const Color(0x3DFFFFFF),
-      darkColor: const Color(0x33FFFFFF),
+      color: const Color(0x1DFFFFFF),
+      darkColor: const Color(0x24FFFFFF),
     ).resolveFrom(context);
     return LiquidGlass.withOwnLayer(
       settings: const LiquidGlassSettings(
-        thickness: 18,
-        blur: 14,
-        glassColor: Color(0x2FFFFFFF),
-        lightIntensity: 1.1,
-        saturation: 1.15,
+        thickness: 14,
+        blur: 10,
+        glassColor: Color(0x1EFFFFFF),
+        lightIntensity: 1.0,
+        saturation: 1.05,
       ),
       shape: LiquidRoundedSuperellipse(borderRadius: 30),
       child: ClipRRect(
@@ -42,7 +42,7 @@ class GlassPanel extends StatelessWidget {
           padding: padding,
           decoration: BoxDecoration(
             color: baseTint,
-            border: Border.all(color: borderTint, width: 0.6),
+            border: Border.all(color: borderTint, width: 0.4),
             borderRadius: BorderRadius.circular(radius),
             gradient: LinearGradient(
               colors: [highlightTint, baseTint],

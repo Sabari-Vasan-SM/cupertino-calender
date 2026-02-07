@@ -71,20 +71,20 @@ class SettingsScreen extends StatelessWidget {
                             CupertinoListTile(
                               backgroundColor: CupertinoColors.transparent,
                               leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(64),
                                 child: Image.asset(
                                   'assets/my.png',
-                                  width: 36,
-                                  height: 36,
+                                  width: 128,
+                                  height: 128,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
                                     return Container(
-                                      width: 36,
-                                      height: 36,
+                                      width: 128,
+                                      height: 128,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
                                         color: CupertinoColors.systemGrey4,
-                                        borderRadius: BorderRadius.circular(18),
+                                        borderRadius: BorderRadius.circular(64),
                                       ),
                                       child: const Text(
                                         'SV',
