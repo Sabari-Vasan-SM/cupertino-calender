@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/tasks_provider.dart';
+import '../widgets/glass_background.dart';
+import '../widgets/glass_panel.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -48,118 +50,161 @@ class _HomeScreenState extends State<HomeScreen> {
       monthStart.month,
       1,
     ).isBefore(DateTime(lastDay.year, lastDay.month, 1));
+    final topInset = MediaQuery.of(context).padding.top;
 
     return CupertinoPageScaffold(
-      child: CustomScrollView(
-        slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: Text(DateFormat('MMMM yyyy').format(_focusedMonth)),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: canGoPrev ? _goToPreviousMonth : null,
-                  child: Icon(
-                    CupertinoIcons.chevron_left,
-                    color: canGoPrev
-                        ? CupertinoColors.systemBlue
-                        : CupertinoColors.systemGrey3,
-                  ),
-                ),
-                CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: canGoNext ? _goToNextMonth : null,
-                  child: Icon(
-                    CupertinoIcons.chevron_right,
-                    color: canGoNext
-                        ? CupertinoColors.systemBlue
-                        : CupertinoColors.systemGrey3,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Column(
-                children: [
-                  const _WeekdayHeader(),
-                  const SizedBox(height: 10),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 6,
-                          crossAxisSpacing: 6,
-                          childAspectRatio: 1,
+      child: Stack(
+        children: [
+          const Positioned.fill(child: GlassBackground()),
+          CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, topInset + 12, 16, 8),
+                  child: GlassPanel(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          DateFormat('MMMM yyyy').format(_focusedMonth),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                    itemCount: totalCells,
-                    itemBuilder: (context, index) {
-                      final dayNumber = index - firstWeekdayOffset + 1;
-                      final date = DateTime(
-                        _focusedMonth.year,
-                        _focusedMonth.month,
-                        dayNumber,
-                      );
-                      final isOutOfMonth = date.month != _focusedMonth.month;
-                      final isToday = _isSameDay(date, _today);
-                      final isSelected = _isSameDay(date, _selectedDate);
-                      final isDisabled =
-                          date.isBefore(firstDay) || date.isAfter(lastDay);
-                      final hasEvent = tasksProvider.hasTasks(date);
-
-                      return _DayCell(
-                        date: date,
-                        isOutOfMonth: isOutOfMonth,
-                        isToday: isToday,
-                        isSelected: isSelected,
-                        isDisabled: isDisabled,
-                        hasEvent: hasEvent,
-                        onTap: () {
-                          if (isDisabled) {
-                            return;
-                          }
-                          setState(() {
-                            _selectedDate = _dateOnly(date);
-                            _focusedMonth = DateTime(date.year, date.month, 1);
-                          });
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: CupertinoListSection.insetGrouped(
-                header: Text(DateFormat.yMMMMd().format(_selectedDate)),
-                children: selectedTasks.isEmpty
-                    ? const [
-                        CupertinoListTile(
-                          title: Text('No events for this day'),
-                        ),
-                      ]
-                    : selectedTasks
-                          .map(
-                            (task) => CupertinoListTile(
-                              title: Text(task),
-                              leading: const Icon(
-                                CupertinoIcons.circle_filled,
-                                size: 10,
-                                color: CupertinoColors.systemBlue,
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: canGoPrev ? _goToPreviousMonth : null,
+                              child: Icon(
+                                CupertinoIcons.chevron_left,
+                                color: canGoPrev
+                                    ? CupertinoColors.systemBlue
+                                    : CupertinoColors.systemGrey3,
                               ),
                             ),
-                          )
-                          .toList(),
+                            CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: canGoNext ? _goToNextMonth : null,
+                              child: Icon(
+                                CupertinoIcons.chevron_right,
+                                color: canGoNext
+                                    ? CupertinoColors.systemBlue
+                                    : CupertinoColors.systemGrey3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: GlassPanel(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                    child: Column(
+                      children: [
+                        const _WeekdayHeader(),
+                        const SizedBox(height: 10),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 7,
+                                mainAxisSpacing: 6,
+                                crossAxisSpacing: 6,
+                                childAspectRatio: 1,
+                              ),
+                          itemCount: totalCells,
+                          itemBuilder: (context, index) {
+                            final dayNumber = index - firstWeekdayOffset + 1;
+                            final date = DateTime(
+                              _focusedMonth.year,
+                              _focusedMonth.month,
+                              dayNumber,
+                            );
+                            final isOutOfMonth =
+                                date.month != _focusedMonth.month;
+                            final isToday = _isSameDay(date, _today);
+                            final isSelected = _isSameDay(date, _selectedDate);
+                            final isDisabled =
+                                date.isBefore(firstDay) ||
+                                date.isAfter(lastDay);
+                            final hasEvent = tasksProvider.hasTasks(date);
+
+                            return _DayCell(
+                              date: date,
+                              isOutOfMonth: isOutOfMonth,
+                              isToday: isToday,
+                              isSelected: isSelected,
+                              isDisabled: isDisabled,
+                              hasEvent: hasEvent,
+                              onTap: () {
+                                if (isDisabled) {
+                                  return;
+                                }
+                                setState(() {
+                                  _selectedDate = _dateOnly(date);
+                                  _focusedMonth = DateTime(
+                                    date.year,
+                                    date.month,
+                                    1,
+                                  );
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: GlassPanel(
+                    padding: const EdgeInsets.only(top: 4, bottom: 4),
+                    child: CupertinoListSection.insetGrouped(
+                      backgroundColor: CupertinoColors.transparent,
+                      separatorColor: CupertinoColors.separator,
+                      header: Text(DateFormat.yMMMMd().format(_selectedDate)),
+                      children: selectedTasks.isEmpty
+                          ? const [
+                              CupertinoListTile(
+                                backgroundColor: CupertinoColors.transparent,
+                                title: Text('No events for this day'),
+                              ),
+                            ]
+                          : selectedTasks
+                                .map(
+                                  (task) => CupertinoListTile(
+                                    backgroundColor:
+                                        CupertinoColors.transparent,
+                                    title: Text(task),
+                                    leading: const Icon(
+                                      CupertinoIcons.circle_filled,
+                                      size: 10,
+                                      color: CupertinoColors.systemBlue,
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -201,9 +246,11 @@ class _WeekdayHeader extends StatelessWidget {
               child: Center(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    color: CupertinoColors.systemGrey,
+                    color: label == 'S'
+                        ? CupertinoColors.systemRed
+                        : CupertinoColors.systemGrey,
                     letterSpacing: 0.4,
                   ),
                 ),
@@ -239,15 +286,17 @@ class _DayCell extends StatelessWidget {
     final Color textColor;
     if (isDisabled) {
       textColor = CupertinoColors.tertiaryLabel.resolveFrom(context);
-    } else if (isToday) {
-      textColor = CupertinoColors.white;
     } else if (isOutOfMonth) {
       textColor = CupertinoColors.secondaryLabel.resolveFrom(context);
+    } else if (isToday || isSelected) {
+      textColor = CupertinoColors.systemBlue;
+    } else if (date.weekday == DateTime.sunday) {
+      textColor = CupertinoColors.systemRed;
     } else {
       textColor = CupertinoColors.label.resolveFrom(context);
     }
 
-    final bool showSelectionRing = isSelected && !isToday;
+    final bool showSelectionBorder = (isSelected || isToday) && !isDisabled;
 
     return CupertinoButton(
       padding: EdgeInsets.zero,
@@ -255,56 +304,60 @@ class _DayCell extends StatelessWidget {
       onPressed: isDisabled ? null : onTap,
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: CupertinoColors.separator, width: 0.5),
+          border: Border.all(
+            color: showSelectionBorder
+                ? CupertinoColors.systemBlue
+                : CupertinoColors.separator,
+            width: showSelectionBorder ? 1.2 : 0.5,
+          ),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: isToday
-                      ? CupertinoColors.systemBlue
-                      : (isSelected
-                            ? CupertinoColors.systemBlue.withOpacity(0.12)
-                            : CupertinoColors.transparent),
-                  shape: BoxShape.circle,
-                  border: showSelectionRing
-                      ? Border.all(
-                          color: CupertinoColors.systemBlue,
-                          width: 1.5,
-                        )
-                      : null,
-                ),
-                child: Text(
-                  '${date.day}',
-                  style: TextStyle(
-                    color: textColor,
-                    fontWeight: isOutOfMonth
-                        ? FontWeight.w400
-                        : FontWeight.w600,
-                    fontSize: 15,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final cellSize = constraints.maxHeight;
+            final circleSize = (cellSize * 0.55).clamp(26.0, 34.0);
+            final gap = (cellSize * 0.08).clamp(2.0, 5.0);
+            final dotSize = (cellSize * 0.1).clamp(4.0, 6.0);
+
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: circleSize,
+                    height: circleSize,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: CupertinoColors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${date.day}',
+                      style: TextStyle(
+                        color: textColor,
+                        fontWeight: isOutOfMonth
+                            ? FontWeight.w400
+                            : FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(height: gap),
+                  if (hasEvent)
+                    Container(
+                      width: dotSize,
+                      height: dotSize,
+                      decoration: const BoxDecoration(
+                        color: CupertinoColors.systemBlue,
+                        shape: BoxShape.circle,
+                      ),
+                    )
+                  else
+                    SizedBox(height: dotSize),
+                ],
               ),
-              const SizedBox(height: 5),
-              if (hasEvent)
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    color: CupertinoColors.systemBlue,
-                    shape: BoxShape.circle,
-                  ),
-                )
-              else
-                const SizedBox(height: 6),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

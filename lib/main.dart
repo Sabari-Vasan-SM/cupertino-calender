@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 
 import 'providers/tasks_provider.dart';
@@ -6,6 +7,7 @@ import 'providers/theme_mode_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/tasks_screen.dart';
+import 'widgets/glass_panel.dart';
 
 void main() {
   runApp(const CalendarTaskApp());
@@ -40,44 +42,173 @@ class CalendarTaskApp extends StatelessWidget {
   }
 }
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
   @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
+  int _currentIndex = 0;
+  static const double _tabBarHeight = 60;
+
+  final List<Widget> _screens = const [
+    HomeScreen(),
+    TasksScreen(),
+    SettingsScreen(),
+  ];
+
+  @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      tabBar: CupertinoTabBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.calendar),
-            label: 'Home',
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
+    return CupertinoPageScaffold(
+      child: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(bottom: _tabBarHeight + bottomInset + 16),
+            child: IndexedStack(index: _currentIndex, children: _screens),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.checkmark_circle),
-            label: 'Tasks',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.settings),
-            label: 'Settings',
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 12 + bottomInset,
+            child: _GlassTabBar(
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+            ),
           ),
         ],
       ),
-      tabBuilder: (context, index) {
-        return CupertinoTabView(
-          builder: (context) {
-            switch (index) {
-              case 0:
-                return const HomeScreen();
-              case 1:
-                return const TasksScreen();
-              case 2:
-                return const SettingsScreen();
-              default:
-                return const HomeScreen();
-            }
+    );
+  }
+}
+
+class _GlassTabBar extends StatelessWidget {
+  const _GlassTabBar({required this.currentIndex, required this.onTap});
+
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassPanel(
+      radius: 26,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      child: SizedBox(
+        height: _MainShellState._tabBarHeight - 12,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final itemWidth = constraints.maxWidth / 3;
+            final pillLeft = itemWidth * currentIndex + 4;
+
+            return Stack(
+              children: [
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 260),
+                  curve: Curves.easeOutCubic,
+                  left: pillLeft,
+                  top: 4,
+                  bottom: 4,
+                  width: itemWidth - 8,
+                  child: LiquidGlass.withOwnLayer(
+                    settings: const LiquidGlassSettings(
+                      thickness: 24,
+                      blur: 16,
+                      glassColor: Color(0x33FFFFFF),
+                      lightIntensity: 1.3,
+                      saturation: 1.2,
+                    ),
+                    shape: LiquidRoundedSuperellipse(borderRadius: 24),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: CupertinoColors.white.withOpacity(0.22),
+                          width: 0.8,
+                        ),
+                        color: CupertinoColors.systemBackground.withOpacity(
+                          0.08,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    _TabItem(
+                      icon: CupertinoIcons.calendar,
+                      label: 'Home',
+                      isActive: currentIndex == 0,
+                      onTap: () => onTap(0),
+                    ),
+                    _TabItem(
+                      icon: CupertinoIcons.checkmark_circle,
+                      label: 'Tasks',
+                      isActive: currentIndex == 1,
+                      onTap: () => onTap(1),
+                    ),
+                    _TabItem(
+                      icon: CupertinoIcons.settings,
+                      label: 'Settings',
+                      isActive: currentIndex == 2,
+                      onTap: () => onTap(2),
+                    ),
+                  ],
+                ),
+              ],
+            );
           },
-        );
-      },
+        ),
+      ),
+    );
+  }
+}
+
+class _TabItem extends StatelessWidget {
+  const _TabItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color activeColor = CupertinoColors.activeBlue.resolveFrom(context);
+    final Color inactiveColor = CupertinoColors.secondaryLabel.resolveFrom(
+      context,
+    );
+
+    return Expanded(
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: onTap,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: isActive ? activeColor : inactiveColor),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: isActive ? activeColor : inactiveColor,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
