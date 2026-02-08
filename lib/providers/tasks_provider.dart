@@ -1,11 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/task_entry.dart';
 
 class TasksProvider extends ChangeNotifier {
+  static const String _storageKey = 'tasks_by_date';
+
   final Map<DateTime, List<String>> _tasks = {};
 
-  TasksProvider();
+  TasksProvider() {
+    _loadFromPrefs();
+  }
 
   Map<DateTime, List<String>> get tasks => _tasks;
 
@@ -29,6 +36,7 @@ class TasksProvider extends ChangeNotifier {
     final list = _tasks.putIfAbsent(key, () => []);
     list.add(title);
     notifyListeners();
+    _saveToPrefs();
   }
 
   List<TaskEntry> upcomingTasks(DateTime fromDate) {
@@ -54,5 +62,39 @@ class TasksProvider extends ChangeNotifier {
 
   DateTime _dateOnly(DateTime date) {
     return DateTime(date.year, date.month, date.day);
+  }
+
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_storageKey);
+      if (raw == null || raw.isEmpty) {
+        return;
+      }
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      _tasks
+        ..clear()
+        ..addAll(
+          decoded.map((key, value) {
+            final date = DateTime.parse(key);
+            final titles = (value as List<dynamic>)
+                .map((item) => item.toString())
+                .toList();
+            return MapEntry(_dateOnly(date), titles);
+          }),
+        );
+      notifyListeners();
+    } catch (_) {
+      // Ignore corrupt data and keep an empty state.
+    }
+  }
+
+  Future<void> _saveToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final payload = <String, List<String>>{};
+    for (final entry in _tasks.entries) {
+      payload[entry.key.toIso8601String()] = List.of(entry.value);
+    }
+    await prefs.setString(_storageKey, jsonEncode(payload));
   }
 }

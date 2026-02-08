@@ -5,19 +5,25 @@ class GlassBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final base = CupertinoColors.systemBackground.resolveFrom(context);
-    final tint = CupertinoColors.secondarySystemBackground.resolveFrom(context);
+    final base = CupertinoDynamicColor.withBrightness(
+      color: const Color(0xFFF6F9FF),
+      darkColor: const Color(0xFF050608),
+    ).resolveFrom(context);
+    final tint = CupertinoDynamicColor.withBrightness(
+      color: const Color(0xFFEAF2FF),
+      darkColor: const Color(0xFF0B0D12),
+    ).resolveFrom(context);
     final glow = CupertinoDynamicColor.withBrightness(
-      color: const Color(0xFFEFF5FF),
-      darkColor: const Color(0xFF0A1222),
+      color: const Color(0xFFCFE1FF),
+      darkColor: const Color(0xFF0A0D16),
     ).resolveFrom(context);
     final glowAlt = CupertinoDynamicColor.withBrightness(
-      color: const Color(0xFFDCEBFF),
-      darkColor: const Color(0xFF101B30),
+      color: const Color(0xFFBFD6FF),
+      darkColor: const Color(0xFF121622),
     ).resolveFrom(context);
     final glowMid = CupertinoDynamicColor.withBrightness(
-      color: const Color(0xFFE6F2FF),
-      darkColor: const Color(0xFF0D1627),
+      color: const Color(0xFFD9E7FF),
+      darkColor: const Color(0xFF0C101B),
     ).resolveFrom(context);
 
     return DecoratedBox(

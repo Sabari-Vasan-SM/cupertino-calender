@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 
 class GlassPanel extends StatelessWidget {
@@ -17,6 +18,9 @@ class GlassPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDark =
         CupertinoTheme.of(context).brightness == Brightness.dark;
+    final bool reduceEffects =
+        defaultTargetPlatform == TargetPlatform.android ||
+        MediaQuery.of(context).disableAnimations;
     final Color baseTint = CupertinoDynamicColor.withBrightness(
       color: const Color(0x06FFFFFF),
       darkColor: const Color(0x12FFFFFF),
@@ -31,14 +35,23 @@ class GlassPanel extends StatelessWidget {
     ).resolveFrom(context);
     final Color darkGradientStart = const Color(0x33121F2E);
     final Color darkGradientEnd = const Color(0x1F0D141E);
+    final LiquidGlassSettings glassSettings = reduceEffects
+        ? const LiquidGlassSettings(
+            thickness: 8,
+            blur: 6,
+            glassColor: Color(0x16FFFFFF),
+            lightIntensity: 0.9,
+            saturation: 1.0,
+          )
+        : const LiquidGlassSettings(
+            thickness: 14,
+            blur: 10,
+            glassColor: Color(0x1EFFFFFF),
+            lightIntensity: 1.0,
+            saturation: 1.05,
+          );
     return LiquidGlass.withOwnLayer(
-      settings: const LiquidGlassSettings(
-        thickness: 14,
-        blur: 10,
-        glassColor: Color(0x1EFFFFFF),
-        lightIntensity: 1.0,
-        saturation: 1.05,
-      ),
+      settings: glassSettings,
       shape: LiquidRoundedSuperellipse(borderRadius: 30),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),

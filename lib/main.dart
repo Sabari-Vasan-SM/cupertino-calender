@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:liquid_glass_renderer/liquid_glass_renderer.dart';
 import 'package:provider/provider.dart';
 
@@ -7,9 +9,12 @@ import 'providers/theme_mode_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/tasks_screen.dart';
+import 'widgets/glass_background.dart';
 import 'widgets/glass_panel.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   runApp(const CalendarTaskApp());
 }
 
@@ -62,10 +67,12 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    SystemChrome.setSystemUIOverlayStyle(_systemUiStyle(context));
 
     return CupertinoPageScaffold(
       child: Stack(
         children: [
+          const Positioned.fill(child: GlassBackground()),
           Padding(
             padding: EdgeInsets.only(bottom: _tabBarHeight + bottomInset + 16),
             child: IndexedStack(index: _currentIndex, children: _screens),
@@ -87,6 +94,20 @@ class _MainShellState extends State<MainShell> {
       ),
     );
   }
+
+  SystemUiOverlayStyle _systemUiStyle(BuildContext context) {
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarColor: const Color(0x00000000),
+      systemNavigationBarColor: const Color(0x00000000),
+      systemNavigationBarDividerColor: const Color(0x00000000),
+      systemNavigationBarContrastEnforced: false,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: isDark
+          ? Brightness.light
+          : Brightness.dark,
+    );
+  }
 }
 
 class _GlassTabBar extends StatelessWidget {
@@ -105,6 +126,24 @@ class _GlassTabBar extends StatelessWidget {
       color: const Color(0x1FFFFFFF),
       darkColor: const Color(0x1FFFFFFF),
     ).resolveFrom(context);
+    final bool reduceEffects =
+        defaultTargetPlatform == TargetPlatform.android ||
+        MediaQuery.of(context).disableAnimations;
+    final LiquidGlassSettings pillSettings = reduceEffects
+        ? const LiquidGlassSettings(
+            thickness: 12,
+            blur: 8,
+            glassColor: Color(0x2FFFFFFF),
+            lightIntensity: 1.0,
+            saturation: 1.05,
+          )
+        : const LiquidGlassSettings(
+            thickness: 20,
+            blur: 14,
+            glassColor: Color(0x3AFFFFFF),
+            lightIntensity: 1.2,
+            saturation: 1.15,
+          );
 
     return GlassPanel(
       radius: 26,
@@ -139,13 +178,7 @@ class _GlassTabBar extends StatelessWidget {
                       bottom: 4,
                       width: itemWidth - 8,
                       child: LiquidGlass.withOwnLayer(
-                        settings: const LiquidGlassSettings(
-                          thickness: 20,
-                          blur: 14,
-                          glassColor: Color(0x3AFFFFFF),
-                          lightIntensity: 1.2,
-                          saturation: 1.15,
-                        ),
+                        settings: pillSettings,
                         shape: LiquidRoundedSuperellipse(borderRadius: 24),
                         child: Container(
                           decoration: BoxDecoration(
